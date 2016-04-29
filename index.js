@@ -44,10 +44,7 @@ var question = new Question({
 //     if (err) return console.error(err);
 // });
 
-Question.find({ status: 'active'}, function (err, questions) {
 
-  
-}).remove().exec();
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
@@ -87,6 +84,12 @@ var options = {
 
 function callback(error, response, body) {
     if (!error && response.statusCode == 200) {
+        Question.find({ status: 'active'}, function (err, questions) {
+
+
+        }).remove().exec();
+
+        
         var result = JSON.parse(body);
         var questionArray = result.results;
         questionArray.forEach(function (item) {

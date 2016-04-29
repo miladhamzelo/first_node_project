@@ -44,8 +44,10 @@ var question = new Question({
 //     if (err) return console.error(err);
 // });
 
-// Find a single movie by name.
+Question.find({ status: 'active'}, function (err, questions) {
 
+  
+}).remove().exec();
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
@@ -114,6 +116,3 @@ function callback(error, response, body) {
 }
 
 request(options, callback);
-
-
-

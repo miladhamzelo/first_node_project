@@ -53,7 +53,7 @@ app.route('/question/:category?:status?')
     .get(function (req, res) {
         console.log(req.query.status);
         var category = req.query.category;
-        Question.find({category: category ,status:'active'}, function (err, questions) {
+        Question.find({category: category, status: 'active'}, function (err, questions) {
 
             if (err) return console.error(err);
             console.log(questions);
@@ -62,7 +62,7 @@ app.route('/question/:category?:status?')
 
     })
     .post(function (req, res) {
-       var  question  = new Question(req.body);
+        var question = new Question(req.body);
         console.log(question);
         question.save(function (err, question) {
             if (err) return res.send(err);
@@ -86,20 +86,31 @@ var options = {
 function callback(error, response, body) {
     if (!error && response.statusCode == 200) {
         var result = JSON.parse(body);
-        var questionArray =result.results;
-        for  (var item of questionArray){
+        var questionArray = result.results;
+        questionArray.forEach(function (item) {
             var question = new Question(item);
             question.status = "active";
             question.save(function (err, question) {
                 if (err) return console.log(err);
             });
             console.log("end of saving objects");
-        };
+
+        });
         console.log("fuck you");
-    }else{
-        console.log(error);  
+        // questionArray.forEach  (var item in questionArray){
+        //     var question = new Question(item);
+        //     question.status = "active";
+        //     question.save(function (err, question) {
+        //         if (err) return console.log(err);
+        //     });
+        //     console.log("end of saving objects");
+        // };
+        // console.log("fuck you");
     }
-   
+    else {
+        console.log(error);
+    }
+
 }
 
 request(options, callback);

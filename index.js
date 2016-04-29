@@ -12,7 +12,7 @@ db.once('open', function () {
     // Create your schemas and models here.
 });
 
-mongoose.connect('mongodb://localhost/brainduel');
+mongoose.connect('mongodb://localhost/test');
 
 
 var questionSchema = new mongoose.Schema({
@@ -71,51 +71,3 @@ app.route('/question/:category?:status?')
     });
 
 app.listen(3000);
-
-var request = require('request');
-
-var options = {
-    url: ' https://api.parse.com/1/classes/Question/?limit=1000',
-    headers: {
-        'X-Parse-Application-Id': '3FRHqnsaulIUYl9zXTk4XHgkJRFx7zkTNf4HzMeu',
-        'X-Parse-REST-API-Key': 'PUkXPafTXMJSz9VQmroxnpsw1HWuCptrr0td66fg'
-    }
-};
-
-function callback(error, response, body) {
-    if (!error && response.statusCode == 200) {
-        Question.find({ status: 'active'}, function (err, questions) {
-
-
-        }).remove().exec();
-
-        
-        var result = JSON.parse(body);
-        var questionArray = result.results;
-        questionArray.forEach(function (item) {
-            var question = new Question(item);
-            question.status = "active";
-            question.save(function (err, question) {
-                if (err) return console.log(err);
-            });
-            console.log("end of saving objects");
-
-        });
-        console.log("fuck you");
-        // questionArray.forEach  (var item in questionArray){
-        //     var question = new Question(item);
-        //     question.status = "active";
-        //     question.save(function (err, question) {
-        //         if (err) return console.log(err);
-        //     });
-        //     console.log("end of saving objects");
-        // };
-        // console.log("fuck you");
-    }
-    else {
-        console.log(error);
-    }
-
-}
-
-request(options, callback);

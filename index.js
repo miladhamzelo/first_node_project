@@ -2,72 +2,70 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 
+var morgan = require('morgan');
+var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var config = require('./jwt/config'); // get our config file
+var User = require('./models/user');
+var UserManagement = require('./user_management/userManagement');
+
+
 
 var mongoose = require('mongoose');
-
+var Question = require('./models/question');
 var db = mongoose.connection;
+
 
 db.on('error', console.error);
 db.once('open', function () {
     // Create your schemas and models here.
 });
 
-mongoose.connect('mongodb://localhost/brainduel');
-
-
-var questionSchema = new mongoose.Schema({
-    questionText: String,
-    firstOption: String,
-    secondOption: String,
-    thirdOption: String,
-    fourthOption: String,
-    correctOption: String,
-    category: String,
-    status: String
-
-});
-
-var Question = mongoose.model('Question', questionSchema);
-var question = new Question({
-    question: 'testQuestion',
-    firstOption: 'test',
-    secondOption: 'test',
-    thirdOption: 'test',
-    fourthOption: 'test',
-    correctOption: 'test4',
-    correctOption: 'test4',
-    category: "kosssher",
-    status: 'pending'
-});
-
-// question.save(function(err, thor) {
-//     if (err) return console.error(err);
-// });
+mongoose.connect('mongodb://localhost/test');
 
 
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
 app.route('/question/:category?:status?')
-    .get(function (req, res) {
-        console.log(req.query.status);
-        var category = req.query.category;
-        Question.find({category: category, status: 'active'}, function (err, questions) {
+    .get(getQuestions)
+    .post(createQuestions);
 
-            if (err) return console.error(err);
-            console.log(questions);
-            res.send(questions);
-        });
 
-    })
-    .post(function (req, res) {
-        var question = new Question(req.body);
-        console.log(question);
-        question.save(function (err, question) {
-            if (err) return res.send(err);
-            res.send(question);
-        });
+ function getQuestions (req, res) {
+    console.log(req.query.category);
+    var category = req.query.category;
+    Question.find({category: category, status: 'active'}, function (err, questions) {
 
+        if (err) return console.error(err);
+        console.log(questions);
+        res.send(questions);
     });
+
+};
+
+ function createQuestions (req, res) {
+    var question = new Question(req.body);
+    console.log(question);
+    question.save(function (err, question) {
+        if (err) return res.send(err);
+        res.send(question);
+    });
+};
+
+app.post('/signup',UserManagement.checkUserNameIsAvailable, UserManagement.signup);
+
+app.get('/users', function (req, res) {
+    User.find({}, function (err, users) {
+        res.json(users);
+    });
+});
+
+// get an instance of the router for api routes
+
+app.post('/login',UserManagement.signin);
+app.get('/test_token', UserManagement.verfiyToken ,function (req , res) {
+    res.send(req.user);
+});
+
 
 app.listen(3000);

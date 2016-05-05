@@ -7,8 +7,8 @@ var config = require('../jwt/config'); // get our config file
 var morgan = require('morgan');
 app.set('superSecret', config.secret); // secret variable
 app.use(morgan('dev'));
-module.exports = {
 
+module.exports = {
     signin: function (req, res) {
 
         // find the user
@@ -51,6 +51,7 @@ module.exports = {
         // create a sample user
         var user = new User(req.body);
         user.password = hashPassword(req.body.password);
+        user.admin = false;
 
         // save the sample user
         user.save(function (err) {
@@ -83,7 +84,7 @@ module.exports = {
         });
 
     },
-    verfiyToken: function  (req, res, next) {
+    verfiyToken: function (req, res, next) {
         var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
 // decode token
@@ -117,6 +118,6 @@ module.exports = {
 
 function hashPassword(password) {
     var crypto = require('crypto');
-   return crypto.createHash('md5').update(password).digest('hex');
+    return crypto.createHash('md5').update(password).digest('hex');
 
 }

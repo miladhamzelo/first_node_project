@@ -24,10 +24,9 @@ module.exports = {
             } else if (user) {
 
                 // check if password matches
-                if (user.password != req.body.password) {
+                if (user.password != hashPassword(req.body.password)) {
                     res.json({success: false, message: 'Authentication failed. Wrong password.'});
                 } else {
-
                     // if user is found and password is right
                     // create a token
                     var token = jwt.sign(user, app.get('superSecret'), {
@@ -51,6 +50,7 @@ module.exports = {
         console.log(req.body);
         // create a sample user
         var user = new User(req.body);
+        user.password = hashPassword(req.body.password);
 
         // save the sample user
         user.save(function (err) {
@@ -114,3 +114,9 @@ module.exports = {
         }
     },
 };
+
+function hashPassword(password) {
+    var crypto = require('crypto');
+   return crypto.createHash('md5').update(password).digest('hex');
+
+}

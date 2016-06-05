@@ -32,12 +32,10 @@ app.route('/question/:category?:status?')
 
 
  function getQuestions (req, res) {
-    console.log(req.query.category);
     var category = req.query.category;
     Question.find({category: category, status: 'active'}, function (err, questions) {
 
         if (err) return console.error(err);
-        console.log(questions);
         res.send(questions);
     });
 
@@ -45,7 +43,6 @@ app.route('/question/:category?:status?')
 
  function createQuestions (req, res) {
     var question = new Question(req.body);
-    console.log(question);
     question.save(function (err, question) {
         if (err) return res.send(err);
         res.send(question);

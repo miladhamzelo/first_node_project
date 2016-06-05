@@ -113,11 +113,19 @@ module.exports = {
             });
 
         }
+    },
+    isAdmin :function(req, res , next){
+        if(req.user.name == "mranjbarz@yahoo.com"){
+            req.user.admin = true;
+        }
+        next();
+        
     }
 };
 
 function hashPassword(password) {
     var crypto = require('crypto');
     return crypto.createHash('md5').update(password).digest('hex');
+    
 
 }

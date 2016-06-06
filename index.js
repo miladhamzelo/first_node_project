@@ -96,5 +96,11 @@ function getPendingQuestions(req , res) {
     }).limit(parseInt(total)).skip(parseInt(begin));
 }
 
+app.get('/brainduel/config',function (req, res) {
+    res.json({latestVersionCode:13950226 , latestVersionLink:'https://cafebazaar.ir/app/gamequestion/',
+    politicVersionCode:13950226,literatureVersionCode:13950226,cinemaVersionCode:13950226,
+        sportVersionCode:13950226,historyVersionCode:13950226,
+    baseUrl:'http://82.102.14.175:3000'});
+});
 
 app.listen(3000);

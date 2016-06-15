@@ -32,6 +32,8 @@ app.route('/question/:category?:status?:_id?')
     .put( UserManagement.verfiyToken,UserManagement.isAdmin,updateQuestion);
     // .put(updateQuestion);
 
+app.get('/bot/brainduel/question' , getOneQuestion);
+
 
  function getQuestions (req, res) {
      if (req.query._id) {
@@ -49,6 +51,26 @@ app.route('/question/:category?:status?:_id?')
      });
  }
 };
+
+
+ function getOneQuestion (req, res) {
+     var category = req.query.category;
+     if (category == "all") {
+         Question.findOne({status : 'active'}, function (err, question) {
+
+             if (err) return console.error(err);
+             res.send(question);
+         });
+     } else {
+     Question.findOne({category: category, status: 'active'}, function (err, questions) {
+
+         if (err) return console.error(err);
+         res.send(questions);
+     });
+ }
+};
+
+
 
  function createQuestions (req, res) {
     var question = new Question(req.body);

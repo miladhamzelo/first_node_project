@@ -54,19 +54,23 @@ app.get('/bot/brainduel/question' , getOneQuestion);
 
 
  function getOneQuestion (req, res) {
+
      var category = req.query.category;
+     var random1 = Math.floor(Math.random()*500);
+     var random2 = Math.floor(Math.random()*80);
      if (category == "all") {
+      
          Question.findOne({status : 'active'}, function (err, question) {
 
              if (err) return console.error(err);
              res.send(question);
-         });
+         }).skip(random1);
      } else {
      Question.findOne({category: category, status: 'active'}, function (err, questions) {
 
          if (err) return console.error(err);
          res.send(questions);
-     });
+     }).skip(random2);
  }
 };
 

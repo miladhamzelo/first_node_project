@@ -77,8 +77,9 @@ app.get('/bot/brainduel/question' , getOneQuestion);
 
 
  function createQuestions (req, res) {
+     console.log('body: ' , req.body);
     var question = new Question(req.body);
-     question.status = "pending";
+     question.status = "active";
     question.save(function (err, question) {
         if (err) return res.send(err);
         res.send(question);

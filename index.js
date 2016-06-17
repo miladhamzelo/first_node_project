@@ -6,6 +6,7 @@ var morgan = require('morgan');
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var config = require('./jwt/config'); // get our config file
 var User = require('./models/user');
+var BotUser = require('./models/botUsers');
 var UserManagement = require('./user_management/userManagement');
 
 
@@ -130,4 +131,42 @@ app.get('/brainduel/config',function (req, res) {
     baseUrl:'http://82.102.14.175:3000'});
 });
 
+
+app.route('/bot/brainduel/user')
+    .get(UserManagement.verfiyToken,UserManagement.isAdmin,getBotUsers)
+    .post(createBotUser);
+
+function createBotUser(req, res) {
+    var botUser = new BotUser(req.body);
+    BotUser.find({ telegramId: botUser.telegramId}, function (err, botUsers) {
+
+        if (err) return res.send(err);
+        if (botUsers.length >0){
+            return res.send('saved before');
+        }else{
+            botUser.save(function (err, botUser) {
+                if (err) return res.send(err);
+                res.send(botUser);
+            });
+        }
+    });
+
+
+}
+
+function getBotUsers (req, res) {
+        BotUser.find(function (err, botUsers) {
+
+            if (err) return res.send('error');
+            res.send(botUsers);
+        });
+};
+app.get('/bot/brainduel/users/count',getBotUsersCount);
+function getBotUsersCount (req, res) {
+        BotUser.count({},function (err, c) {
+
+            if (err) return res.send('error');
+            res.send(c.toString());
+        });
+};
 app.listen(3000);

@@ -10,5 +10,6 @@ module.exports = mongoose.model('BotUser', new Schema({
     name: String,
     lastName: String,
     telegramUserName: String,
-    telegramId: String
+    telegramId: String,
+    questionCount : Number
 }));

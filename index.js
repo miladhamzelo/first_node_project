@@ -55,21 +55,38 @@ function getQuestions(req, res) {
 function getOneQuestion(req, res) {
 
     var category = req.query.category;
-    var random1 = Math.floor(Math.random() * 500);
-    var random2 = Math.floor(Math.random() * 80);
+    var categoryQuestionsCount = 0;
+    if (category != 'all') {
+    Question.count({category: category}, function (err, c) {
+        categoryQuestionsCount = c - 2;
+    });
+    }
+    var randomNumberForAllQuestions = Math.floor(Math.random() * 800);
+    var randomNumberForCategoryQuestion = Math.floor(Math.random() * categoryQuestionsCount);
+    if (req.headers['telegram-id']){
+        BotUser.findOne({telegramId: req.headers['telegram-id']}, function (err, botUser) {
+            console.log(botUser);
+            if (botUser.questionCount){
+                botUser.questionCount += 1;
+            }else{
+                botUser.questionCount = 1;
+            }
+            botUser.save();
+        })
+    }
     if (category == "all") {
 
         Question.findOne({status: 'active'}, function (err, question) {
 
             if (err) return console.error(err);
             res.send(question);
-        }).skip(random1);
+        }).skip(randomNumberForAllQuestions);
     } else {
         Question.findOne({category: category, status: 'active'}, function (err, questions) {
 
             if (err) return console.error(err);
             res.send(questions);
-        }).skip(random2);
+        }).skip(randomNumberForCategoryQuestion);
     }
 };
 
@@ -86,8 +103,8 @@ function createQuestions(req, res) {
 
 function updateQuestion(req, res) {
     var _id = req.query._id;
-    var status = req.query.status;
-    Question.findOneAndUpdate({_id: _id}, {$set: {status: status}}, function (err) {
+    Question.findOneAndUpdate({_id: _id}, {$set: req.body}, function (err) {
+        console.log(req.body);
 
         if (err) return res.send(err);
         res.json({message: "success"});
@@ -213,4 +230,6 @@ var j = schedule.scheduleJob(rule, function(){
             console.log('requesting to heroku status code :' ,response.status); // 200
         });
 });
-
+var string ='/politic';
+console.log(string.substring(1));
+console.log(string.includes('/'));

@@ -102,8 +102,7 @@ function createQuestions(req, res) {
 };
 
 function updateQuestion(req, res) {
-    var _id = req.query._id;
-    Question.findOneAndUpdate({_id: _id}, {$set: req.body}, function (err) {
+    Question.findOneAndUpdate({_id: req.body._id}, {$set: req.body}, function (err) {
         console.log(req.body);
 
         if (err) return res.send(err);

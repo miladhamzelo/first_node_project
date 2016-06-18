@@ -55,14 +55,7 @@ function getQuestions(req, res) {
 function getOneQuestion(req, res) {
 
     var category = req.query.category;
-    var categoryQuestionsCount = 0;
-    if (category != 'all') {
-    Question.count({category: category}, function (err, c) {
-        categoryQuestionsCount = c - 2;
-    });
-    }
-    var randomNumberForAllQuestions = Math.floor(Math.random() * 800);
-    var randomNumberForCategoryQuestion = Math.floor(Math.random() * categoryQuestionsCount);
+
     if (req.headers['telegram-id']){
         BotUser.findOne({telegramId: req.headers['telegram-id']}, function (err, botUser) {
             console.log(botUser);
@@ -75,18 +68,26 @@ function getOneQuestion(req, res) {
         })
     }
     if (category == "all") {
-
+        var randomNumberForAllQuestions = Math.floor(Math.random() * 800);
         Question.findOne({status: 'active'}, function (err, question) {
 
             if (err) return console.error(err);
             res.send(question);
         }).skip(randomNumberForAllQuestions);
     } else {
-        Question.findOne({category: category, status: 'active'}, function (err, questions) {
+        var categoryQuestionsCount = 0;
+        Question.count({category: category}, function (err, c) {
+            if (c>2) {
+                categoryQuestionsCount = c - 2;
+            }
+            var randomNumberForCategoryQuestion = Math.floor(Math.random() * categoryQuestionsCount);
+            Question.findOne({category: category, status: 'active'}, function (err, questions) {
 
-            if (err) return console.error(err);
-            res.send(questions);
-        }).skip(randomNumberForCategoryQuestion);
+                if (err) return console.error(err);
+                res.send(questions);
+            }).skip(randomNumberForCategoryQuestion);
+        });
+
     }
 };
 

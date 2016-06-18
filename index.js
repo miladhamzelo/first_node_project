@@ -194,3 +194,23 @@ function getBotUsersCount(req, res) {
 
 app.listen(3000);
 
+/**
+ * request every hour to heroku to prevent sleeping heroku server
+ */
+
+
+var schedule = require('node-schedule');
+var request = require('request');
+
+var rule = new schedule.RecurrenceRule();
+rule.minute = 42;
+
+var j = schedule.scheduleJob(rule, function(){
+    console.log('The answer to life, the universe, and everything!');
+    request
+        .get('http://brainduel-telegram-bot.herokuapp.com/')
+        .on('response', function(response) {
+            console.log('requesting to heroku status code :' ,response.status); // 200
+        });
+});
+

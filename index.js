@@ -10,7 +10,6 @@ var BotUser = require('./models/botUsers');
 var UserManagement = require('./user_management/userManagement');
 
 
-
 var mongoose = require('mongoose');
 var Question = require('./models/question');
 var db = mongoose.connection;
@@ -24,63 +23,61 @@ db.once('open', function () {
 mongoose.connect('mongodb://localhost/brainduel');
 
 
-
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
 app.route('/question/:category?:status?:_id?')
     .get(getQuestions)
     .post(createQuestions)
-    .put( UserManagement.verfiyToken,UserManagement.isAdmin,updateQuestion);
-    // .put(updateQuestion);
+    .put(UserManagement.verfiyToken, UserManagement.isAdmin, updateQuestion);
+// .put(updateQuestion);
 
-app.get('/bot/brainduel/question' , getOneQuestion);
+app.get('/bot/brainduel/question', getOneQuestion);
 
 
- function getQuestions (req, res) {
-     if (req.query._id) {
-         Question.find({_id:req.query._id}, function (err, question) {
+function getQuestions(req, res) {
+    if (req.query._id) {
+        Question.find({_id: req.query._id}, function (err, question) {
 
-             if (err) return console.error(err);
-             res.send(question);
-         });
-     } else {
-     var category = req.query.category;
-     Question.find({category: category, status: 'active'}, function (err, questions) {
+            if (err) return console.error(err);
+            res.send(question);
+        });
+    } else {
+        var category = req.query.category;
+        Question.find({category: category, status: 'active'}, function (err, questions) {
 
-         if (err) return console.error(err);
-         res.send(questions);
-     });
- }
+            if (err) return console.error(err);
+            res.send(questions);
+        });
+    }
 };
 
 
- function getOneQuestion (req, res) {
+function getOneQuestion(req, res) {
 
-     var category = req.query.category;
-     var random1 = Math.floor(Math.random()*500);
-     var random2 = Math.floor(Math.random()*80);
-     if (category == "all") {
-      
-         Question.findOne({status : 'active'}, function (err, question) {
+    var category = req.query.category;
+    var random1 = Math.floor(Math.random() * 500);
+    var random2 = Math.floor(Math.random() * 80);
+    if (category == "all") {
 
-             if (err) return console.error(err);
-             res.send(question);
-         }).skip(random1);
-     } else {
-     Question.findOne({category: category, status: 'active'}, function (err, questions) {
+        Question.findOne({status: 'active'}, function (err, question) {
 
-         if (err) return console.error(err);
-         res.send(questions);
-     }).skip(random2);
- }
+            if (err) return console.error(err);
+            res.send(question);
+        }).skip(random1);
+    } else {
+        Question.findOne({category: category, status: 'active'}, function (err, questions) {
+
+            if (err) return console.error(err);
+            res.send(questions);
+        }).skip(random2);
+    }
 };
 
 
-
- function createQuestions (req, res) {
-     console.log('body: ' , req.body);
+function createQuestions(req, res) {
+    console.log('body: ', req.body);
     var question = new Question(req.body);
-     question.status = "active";
+    question.status = "active";
     question.save(function (err, question) {
         if (err) return res.send(err);
         res.send(question);
@@ -88,17 +85,36 @@ app.get('/bot/brainduel/question' , getOneQuestion);
 };
 
 function updateQuestion(req, res) {
-        var _id = req.query._id;
-        var status = req.query.status;
-        Question.findOneAndUpdate({_id : _id},{$set:{status :status}}, function (err) {
-            
-            if (err) return res.send(err);
-            res.json({message:"success"});
-        });
-        
+    var _id = req.query._id;
+    var status = req.query.status;
+    Question.findOneAndUpdate({_id: _id}, {$set: {status: status}}, function (err) {
+
+        if (err) return res.send(err);
+        res.json({message: "success"});
+    });
+
 }
 
-app.post('/signup',UserManagement.checkUserNameIsAvailable, UserManagement.signup);
+app.get('/count/question:category?', getQuestionCount);
+function getQuestionCount(req, res) {
+    if (req.query.category) {
+
+        Question.count({category: req.query.category}, function (err, c) {
+
+            if (err) return res.send('error');
+            res.json({category:req.query.category,count:c});
+        });
+    }
+    else {
+        Question.count( function (err, c) {
+
+            if (err) return res.send('error');
+            res.json({category:'all',count:c});
+        });
+    }
+}
+
+app.post('/signup', UserManagement.checkUserNameIsAvailable, UserManagement.signup);
 
 app.get('/users', function (req, res) {
     User.find({}, function (err, users) {
@@ -108,42 +124,47 @@ app.get('/users', function (req, res) {
 
 // get an instance of the router for api routes
 
-app.post('/login',UserManagement.signin);
-app.get('/test_token', UserManagement.verfiyToken ,function (req , res) {
+app.post('/login', UserManagement.signin);
+app.get('/test_token', UserManagement.verfiyToken, function (req, res) {
     res.send(req.user);
 });
 
-app.get('/admin/questions:begin?:total?',UserManagement.verfiyToken,UserManagement.isAdmin,getPendingQuestions);
-function getPendingQuestions(req , res) {
+app.get('/admin/questions:begin?:total?', UserManagement.verfiyToken, UserManagement.isAdmin, getPendingQuestions);
+function getPendingQuestions(req, res) {
     var begin = req.query.begin;
     var total = req.query.total;
-    Question.find({ status: 'pending'}, function (err, questions) {
+    Question.find({status: 'pending'}, function (err, questions) {
 
         if (err) return console.error(err);
         res.send(questions);
     }).limit(parseInt(total)).skip(parseInt(begin));
 }
 
-app.get('/brainduel/config',function (req, res) {
-    res.json({latestVersionCode:13950226 , latestVersionLink:'https://cafebazaar.ir/app/gamequestion/',
-    politicVersionCode:13950226,literatureVersionCode:13950226,cinemaVersionCode:13950226,
-        sportVersionCode:13950226,historyVersionCode:13950226,
-    baseUrl:'http://82.102.14.175:3000'});
+
+app.get('/brainduel/config', function (req, res) {
+    res.json({
+        latestVersionCode: 13950226, latestVersionLink: 'https://cafebazaar.ir/app/gamequestion/',
+        politicVersionCode: 13950226, literatureVersionCode: 13950226, cinemaVersionCode: 13950226,
+        sportVersionCode: 13950226, historyVersionCode: 13950226,
+        baseUrl: 'http://82.102.14.175:3000'
+    });
 });
 
 
-app.route('/bot/brainduel/user')
-    .get(UserManagement.verfiyToken,UserManagement.isAdmin,getBotUsers)
+
+
+app.route('/bot/user')
+    .get(UserManagement.verfiyToken, UserManagement.isAdmin, getBotUsers)
     .post(createBotUser);
 
 function createBotUser(req, res) {
     var botUser = new BotUser(req.body);
-    BotUser.find({ telegramId: botUser.telegramId}, function (err, botUsers) {
+    BotUser.find({telegramId: botUser.telegramId}, function (err, botUsers) {
 
         if (err) return res.send(err);
-        if (botUsers.length >0){
+        if (botUsers.length > 0) {
             return res.send('saved before');
-        }else{
+        } else {
             botUser.save(function (err, botUser) {
                 if (err) return res.send(err);
                 res.send(botUser);
@@ -154,19 +175,134 @@ function createBotUser(req, res) {
 
 }
 
-function getBotUsers (req, res) {
-        BotUser.find(function (err, botUsers) {
+function getBotUsers(req, res) {
+    BotUser.find(function (err, botUsers) {
 
-            if (err) return res.send('error');
-            res.send(botUsers);
-        });
+        if (err) return res.send('error');
+        res.send(botUsers);
+    });
 };
-app.get('/bot/brainduel/users/count',getBotUsersCount);
-function getBotUsersCount (req, res) {
-        BotUser.count({},function (err, c) {
+app.get('/bot/count/users', getBotUsersCount);
+function getBotUsersCount(req, res) {
+    BotUser.count(function (err, c) {
 
-            if (err) return res.send('error');
-            res.send(c.toString());
-        });
+        if (err) return res.send('error');
+        res.send(c.toString());
+    });
 };
+
+
 app.listen(3000);
+
+
+var jsonfile = require('jsonfile');
+
+/**
+ * saving questions to database from json file
+ * @type {string}
+ */
+
+var file = '504_english_to_english.json';
+jsonfile.readFile(file, function (err, obj) {
+    console.log(obj.length)
+    for (i = 0; i < obj.length; i++) {
+        var question = new Question(obj[i]);
+        question.status = 'active';
+        question.save(function (err, question) {
+            if (err) return console.log('error');
+            console.log('success')
+        });
+
+    }
+});
+
+var file2 = '504_persian_to_english.json';
+jsonfile.readFile(file2, function(err, obj) {
+    console.log(obj.length);
+    for (i=0 ; i<obj.length ; i++){
+        var question = new Question(obj[i]) ;
+        question.status = 'active';
+        question.save(function (err, question) {
+            if (err) return console.log('error');
+            console.log('success')
+        });
+
+    }
+});
+var file3 = '450_english_to_english.json';
+jsonfile.readFile(file3, function (err, obj) {
+    console.log(obj.length)
+    for (i = 0; i < obj.length; i++) {
+        var question = new Question(obj[i]);
+        question.status = 'active';
+        question.save(function (err, question) {
+            if (err) return console.log('error');
+            console.log('success')
+        });
+
+    }
+});
+
+var file4 = '450_english_to_persian.json';
+jsonfile.readFile(file4, function(err, obj) {
+    console.log(obj.length);
+    for (i=0 ; i<obj.length ; i++){
+        var question = new Question(obj[i]) ;
+        question.status = 'active';
+        question.save(function (err, question) {
+            if (err) return console.log('error');
+            console.log('success')
+        });
+
+    }
+});
+var file5 = 'konkoor_arshad_english.json';
+jsonfile.readFile(file5, function(err, obj) {
+    console.log(obj.length);
+    for (i=0 ; i<obj.length ; i++){
+        var question = new Question(obj[i]) ;
+        question.status = 'active';
+        question.save(function (err, question) {
+            if (err) return console.log('error');
+            console.log('success')
+        });
+
+    }
+});
+
+
+/**
+ * converting questions from xml to json
+ */
+
+var fs = require('fs'),
+    xml2js = require('xml2js');
+
+var parser = new xml2js.Parser();
+
+fs.readFile('english_duel_persion.xml', function(err, data) {
+    parser.parseString(data, function (err, result) {
+        // console.log(result.words.english[0].item.length)
+        var englishWordsArray =[];
+        for ( i=0 ; i<result.words.konkoor[0].item.length ; i+= 6){
+            var word = {};
+            word.questionText= result.words.konkoor[0].item[i];
+            word.firstOption= result.words.konkoor[0].item[i+1];
+            word.secondOption= result.words.konkoor[0].item[i+2];
+            word.thirdOption= result.words.konkoor[0].item[i+3];
+            word.fourthOption= result.words.konkoor[0].item[i+4];
+            word.correctOption= result.words.konkoor[0].item[i+5];
+            word.category= 'konkoor_arshad_english';
+            englishWordsArray.push(word);
+
+
+        }
+        var jsonfile = require('jsonfile');
+        var file = 'konkoor_arshad_english.json';
+
+        jsonfile.writeFile(file, englishWordsArray, function (err) {
+            if (err != null){ 'english to english saved'}
+        });
+  
+    });
+});

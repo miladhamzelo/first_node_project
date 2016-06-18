@@ -230,6 +230,3 @@ var j = schedule.scheduleJob(rule, function(){
             console.log('requesting to heroku status code :' ,response.status); // 200
         });
 });
-var string ='/politic';
-console.log(string.substring(1));
-console.log(string.includes('/'));

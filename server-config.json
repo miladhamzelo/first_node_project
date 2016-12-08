@@ -1,0 +1,7 @@
+{
+  "AUTHORIZE_TOKEN" :"djskhaghjksah897hdsjgaksadfs",
+  "API_BASE_URL" :"localhost:3000/v2",
+  "ADMIN_TELEGRAM_IDS" :"87938126",
+  "TELEGRAM_BOT_TOKEN":"224171916:AAHOUmKmrmGGXaYxPl37xq1_705dOUl2lq4",
+  "EXPRESS_LISTENING_PORT":"3500"
+}

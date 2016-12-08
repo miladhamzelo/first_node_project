@@ -7,9 +7,14 @@ var Schema = mongoose.Schema;
 
 // set up a mongoose model and pass it using module.exports
 module.exports = mongoose.model('BotUser', new Schema({
-    name: String,
+    firstName: String,
     lastName: String,
     telegramUserName: String,
-    telegramId: String,
-    questionCount : Number
+    telegramId: {type:String , unique : true},
+    questionCount : {type:Number, default :0},
+    correctAnswers :{type:Number, default :0},
+    wrongAnswers :{type:Number, default :0},
+    callers :{type: [String], default :[]},
+    blockedBot :{type :Boolean, default :false}
+    
 }));

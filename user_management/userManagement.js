@@ -9,119 +9,129 @@ app.set('superSecret', config.secret); // secret variable
 app.use(morgan('dev'));
 
 module.exports = {
-    signin: function (req, res) {
+    signin,
+    signUp,
 
-        // find the user
-        console.log(req.body.name)
-        User.findOne({
-            name: req.body.name
-        }, function (err, user) {
+    checkUserNameIsAvailable ,
+    verifyToken,
+    isAdmin 
+};
 
-            if (err) throw err;
+function checkUserNameIsAvailable(req, res, next) {
+    console.log(req.body);
+    User.find({name: req.body.name}, function (err, users) {
 
-            if (!user) {
-                res.json({success: false, message: 'Authentication failed. User not found.'});
-            } else if (user) {
+        if (err) return console.error(err);
+        console.log(users);
+        if (users.length == 0) {
+            next();
+        } else {
+            res.json({success: false, message: 'userName is not available'});
+        }
+    });
 
-                // check if password matches
-                if (user.password != hashPassword(req.body.password)) {
-                    res.json({success: false, message: 'Authentication failed. Wrong password.'});
-                } else {
-                    // if user is found and password is right
-                    // create a token
-                    var token = jwt.sign(user, app.get('superSecret'), {
-                        // expiresInMinutes: 1440 // expires in 24 hours
-                    });
+}
 
-                    // return the information including token as JSON
-                    res.json({
-                        success: true,
-                        message: 'Enjoy your token!',
-                        token: token
-                    });
-                }
+function signin (req, res) {
 
-            }
+    // find the user
+    console.log(req.body.name)
+    User.findOne({
+        name: req.body.name
+    }, function (err, user) {
 
-        });
-    },
-    signup: function (req, res) {
+        if (err) throw err;
 
-        console.log(req.body);
-        // create a sample user
-        var user = new User(req.body);
-        user.password = hashPassword(req.body.password);
-        user.admin = false;
+        if (!user) {
+            res.json({success: false, message: 'Authentication failed. User not found.'});
+        } else if (user) {
 
-        // save the sample user
-        user.save(function (err) {
-            if (err) throw err;
-
-            var token = jwt.sign(user, app.get('superSecret'), {
-                // expiresInMinutes: 1440 // expires in 24 hours
-            });
-
-            // return the information including token as JSON
-            res.json({
-                success: true,
-                message: 'signUp was successful!',
-                token: token
-            });
-        });
-    },
-
-    checkUserNameIsAvailable: function (req, res, next) {
-        console.log(req.body);
-        User.find({name: req.body.name}, function (err, users) {
-
-            if (err) return console.error(err);
-            console.log(users);
-            if (users.length == 0) {
-                next();
+            // check if password matches
+            if (user.password != hashPassword(req.body.password)) {
+                res.json({success: false, message: 'Authentication failed. Wrong password.'});
             } else {
-                res.json({success: false, message: 'userName is not available'});
+                // if user is found and password is right
+                // create a token
+                var token = jwt.sign(user, app.get('superSecret'), {
+                    // expiresInMinutes: 1440 // expires in 24 hours
+                });
+
+                // return the information including token as JSON
+                res.json({
+                    success: true,
+                    message: 'Enjoy your token!',
+                    token: token
+                });
             }
+
+        }
+
+    });
+}
+
+function signUp (req, res) {
+
+    console.log(req.body);
+    // create a sample user
+    var user = new User(req.body);
+    user.password = hashPassword(req.body.password);
+    user.admin = false;
+
+    // save the sample user
+    user.save(function (err) {
+        if (err) throw err;
+
+        var token = jwt.sign(user, app.get('superSecret'), {
+            // expiresInMinutes: 1440 // expires in 24 hours
         });
 
-    },
-    verfiyToken: function (req, res, next) {
-        var token = req.body.token || req.query.token || req.headers['x-access-token'];
+        // return the information including token as JSON
+        res.json({
+            success: true,
+            message: 'signUp was successful!',
+            token: token
+        });
+    });
+}
+
+function verifyToken(req, res, next) {
+    var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
 // decode token
-        if (token) {
+    if (token) {
 
-            // verifies secret and checks exp
-            jwt.verify(token, app.get('superSecret'), function (err, decoded) {
-                if (err) {
-                    return res.json({success: false, message: 'Failed to authenticate token.'});
-                } else {
-                    // if everything is good, save to request for use in other routes
-                    req.decoded = decoded;
-                    req.user = decoded._doc;
-                    req.user.password = null;
-                    next();
-                }
-            });
+        // verifies secret and checks exp
+        jwt.verify(token, app.get('superSecret'), function (err, decoded) {
+            if (err) {
+                return res.json({success: false, message: 'Failed to authenticate token.'});
+            } else {
+                // if everything is good, save to request for use in other routes
+                req.decoded = decoded;
+                req.user = decoded._doc;
+                req.user.password = null;
+                next();
+            }
+        });
 
-        } else {
+    } else {
 
-            // if there is no token
-            // return an error
-            return res.status(403).send({
-                success: false,
-                message: 'No token provided.'
-            });
+        // if there is no token
+        // return an error
+        return res.status(403).send({
+            success: false,
+            message: 'No token provided.'
+        });
 
-        }
-    },
-    isAdmin :function(req, res , next){
-        if(req.user.name == "mranjbarz@yahoo.com"){
-            req.user.admin = true;
-        }
-        next();
-        
     }
-};
+}
+
+function isAdmin(req, res , next){
+    if(req.user.name == "mranjbarz@yahoo.com"){
+        req.user.admin = true;
+    }
+    next();
+
+}
 
 function hashPassword(password) {
     var crypto = require('crypto');

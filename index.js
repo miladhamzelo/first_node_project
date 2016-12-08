@@ -25,10 +25,13 @@ mongoose.connect('mongodb://localhost/brainduel');
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
+require('./api/question-controller')(app);
+require('./api/user-controller')(app);
+require('./api/utillity-controller')(app);
 app.route('/question/:category?:status?:_id?')
     .get(getQuestions)
     .post(createQuestions)
-    .put(UserManagement.verfiyToken, UserManagement.isAdmin, updateQuestion);
+    .put(UserManagement.verifyToken, UserManagement.isAdmin, updateQuestion);
 // .put(updateQuestion);
 
 app.get('/bot/brainduel/question', getOneQuestion);
@@ -131,7 +134,7 @@ function getQuestionCount(req, res) {
     }
 }
 
-app.post('/signup', UserManagement.checkUserNameIsAvailable, UserManagement.signup);
+app.post('/signUp', UserManagement.checkUserNameIsAvailable, UserManagement.signUp);
 
 app.get('/users', function (req, res) {
     User.find({}, function (err, users) {
@@ -142,11 +145,11 @@ app.get('/users', function (req, res) {
 // get an instance of the router for api routes
 
 app.post('/login', UserManagement.signin);
-app.get('/test_token', UserManagement.verfiyToken, function (req, res) {
+app.get('/test_token', UserManagement.verifyToken, function (req, res) {
     res.send(req.user);
 });
 
-app.get('/admin/questions:begin?:total?', UserManagement.verfiyToken, UserManagement.isAdmin, getPendingQuestions);
+app.get('/admin/questions:begin?:total?', UserManagement.verifyToken, UserManagement.isAdmin, getPendingQuestions);
 function getPendingQuestions(req, res) {
     var begin = req.query.begin;
     var total = req.query.total;
@@ -171,7 +174,7 @@ app.get('/brainduel/config', function (req, res) {
 
 
 app.route('/bot/user')
-    .get(UserManagement.verfiyToken, UserManagement.isAdmin, getBotUsers)
+    .get(UserManagement.verifyToken, UserManagement.isAdmin, getBotUsers)
     .post(createBotUser);
 
 function createBotUser(req, res) {

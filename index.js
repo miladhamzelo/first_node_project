@@ -223,7 +223,7 @@ var schedule = require('node-schedule');
 var request = require('request');
 
 var rule = new schedule.RecurrenceRule();
-rule.minute = 42;
+rule.second = 42;
 
 var j = schedule.scheduleJob(rule, function(){
     console.log('The answer to life, the universe, and everything!');
